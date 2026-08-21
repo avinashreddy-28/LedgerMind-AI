@@ -3,11 +3,14 @@ reconciliation.py
 =================
 Core reconciliation engine for LedgerMind-AI.
 
-Provides two public functions:
+Provides three public functions:
     1. load_data       – reads invoice and bank CSV files into DataFrames.
     2. reconcile_transactions – matches invoices to bank transactions by amount
                                and reports matched, unmatched, and a match %.
+    3. generate_exceptions    – uses AI to explain each unmatched invoice.
 """
+
+import time
 
 import pandas as pd
 
@@ -135,6 +138,68 @@ def reconcile_transactions(
         "unmatched": unmatched_df,
         "match_percentage": round(match_percentage, 2),
     }
+
+
+# ---------------------------------------------------------------------------
+# 3. AI-POWERED EXCEPTION ANALYSIS
+# ---------------------------------------------------------------------------
+
+def generate_exceptions(unmatched_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Generate AI-powered explanations for every unmatched invoice.
+
+    For each row in *unmatched_df*, the Gemini-backed
+    :func:`backend.exception_agent.explain_exception` is called to produce
+    a human-readable explanation of why the invoice might not have a
+    matching bank transaction.
+
+    A 1-second delay is inserted between API calls to stay within
+    free-tier rate limits.
+
+    Parameters
+    ----------
+    unmatched_df : pd.DataFrame
+        DataFrame of invoices that had no bank match.
+        Must contain ``invoice_id`` and ``amount`` columns.
+
+    Returns
+    -------
+    pd.DataFrame
+        A new DataFrame with columns:
+        ``invoice_id``, ``amount``, ``explanation``.
+    """
+
+    # Import the AI agent here (lazy import) so the rest of the module
+    # stays usable even when the Gemini key isn't configured.
+    from backend.exception_agent import explain_exception
+
+    # --- Step 1: Prepare a list to collect results -------------------------
+    exception_records: list[dict] = []
+
+    # --- Step 2: Iterate over each unmatched invoice -----------------------
+    total = len(unmatched_df)
+    for idx, row in unmatched_df.iterrows():
+        invoice_id = row["invoice_id"]
+        amount = row["amount"]
+
+        # Call the AI agent to generate a plain-text explanation.
+        explanation = explain_exception(invoice_id, amount)
+
+        # Store the result.
+        exception_records.append({
+            "invoice_id": invoice_id,
+            "amount": amount,
+            "explanation": explanation,
+        })
+        # --- Step 3: Rate-limit guard -------------------------------------
+        # Pause 3 seconds between calls to avoid hitting API rate limits.
+        # Skip the delay after the last item to keep things snappy.
+        if idx < total - 1:
+            time.sleep(3)
+
+    # --- Step 4: Build and return the results DataFrame --------------------
+    exceptions_df = pd.DataFrame(exception_records)
+    return exceptions_df
 
 
 # ---------------------------------------------------------------------------
