@@ -1,8 +1,8 @@
 """
 frontend/app.py — LedgerMind AI Autonomous Finance Controller Dashboard
 ========================================================================
-A calm, minimal, fintech-grade interface for automated reconciliation,
-AI exception root-cause intelligence, multi-agent query routing, and cash forecasting.
+A high-performance, technical "AI Dev-Tool" interface for transaction reconciliation,
+ChromaDB policy RAG, Text-to-SQL Copilot, and LangGraph cash forecasting.
 """
 
 import sys
@@ -35,8 +35,8 @@ from backend.db import _active_backend, init_db
 # 1. Page Configuration
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="LedgerMind AI",
-    page_icon="📒",
+    page_title="LedgerMind AI // Controller",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -48,14 +48,14 @@ except Exception:
     pass
 
 # ---------------------------------------------------------------------------
-# 2. Minimalist Fintech CSS Design System
+# 2. Modern Technical "Dev-Tool" CSS Design System
 # ---------------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    /* ---------- Reset & Clutter Removal ---------- */
+    /* ---------- Chrome & Clutter Removal ---------- */
     #MainMenu, footer, header {
         visibility: hidden !important;
         height: 0 !important;
@@ -65,214 +65,330 @@ st.markdown(
 
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        background-color: #f8fafc !important;
-        color: #0f172a !important;
-        letter-spacing: -0.01em;
+        background-color: #FAFAFA !important;
+        color: #1A1A1A !important;
+        letter-spacing: -0.015em;
+    }
+
+    code, pre, .terminal-text {
+        font-family: 'JetBrains Mono', monospace !important;
     }
 
     .block-container {
-        padding-top: 1.75rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 2.5rem !important;
-        max-width: 1200px !important;
+        max-width: 1240px !important;
     }
 
-    /* ---------- Header Banner ---------- */
-    .fintech-header {
+    /* ---------- Top App Bar / Dev-Tool Header ---------- */
+    .dev-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
         border-radius: 12px;
-        padding: 1.25rem 1.75rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+        padding: 1.15rem 1.6rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
-    .header-title-group h1 {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: #0f172a;
+    .dev-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+    .dev-logo-badge {
+        background: #FFF7ED;
+        border: 1px solid #FFEDD5;
+        color: #FF6B1A;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 1.1rem;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .dev-header-titles h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #111827;
         margin: 0;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
     }
-    .header-title-group p {
-        font-size: 0.88rem;
-        color: #64748b;
-        margin: 0.2rem 0 0 0;
-        font-weight: 400;
+    .dev-header-titles p {
+        font-size: 0.82rem;
+        color: #6B7280;
+        margin: 0.15rem 0 0 0;
+        font-family: 'JetBrains Mono', monospace;
     }
-    .header-status-pill {
+    .dev-status-pill {
         display: flex;
         align-items: center;
         gap: 0.45rem;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 9999px;
-        padding: 0.35rem 0.85rem;
-        font-size: 0.78rem;
+        background: #111827;
+        color: #F9FAFB;
+        border-radius: 6px;
+        padding: 0.35rem 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: #334155;
     }
-    .status-dot {
+    .pulse-dot {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background-color: #10b981;
+        background-color: #FF6B1A;
+        box-shadow: 0 0 8px rgba(255, 107, 26, 0.8);
     }
 
-    /* ---------- Cards & Containers ---------- */
-    .fintech-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+    /* ---------- Icon-Badge Metric Cards ---------- */
+    .metric-card-dev {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
         border-radius: 12px;
-        padding: 1.4rem 1.6rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
-        margin-bottom: 1.25rem;
-        animation: fadeIn 0.25s ease-in-out;
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
     }
-    .fintech-card-header {
+    .metric-card-dev:hover {
+        border-color: #D1D5DB;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
+    }
+    .metric-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    .metric-icon-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.95rem;
+    }
+    .metric-icon-orange { background: #FFF7ED; color: #EA580C; border: 1px solid #FFEDD5; }
+    .metric-icon-blue   { background: #EFF6FF; color: #2563EB; border: 1px solid #DBEAFE; }
+    .metric-icon-red    { background: #FEF2F2; color: #DC2626; border: 1px solid #FEE2E2; }
+    .metric-icon-green  { background: #F0FDF4; color: #16A34A; border: 1px solid #DCFCE7; }
+    
+    .metric-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
         font-weight: 600;
-        color: #0f172a;
-        margin-bottom: 0.75rem;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .metric-main-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.03em;
+        margin: 0.2rem 0;
+    }
+    .metric-sub-label {
+        font-size: 0.76rem;
+        color: #6B7280;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(3px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* ---------- Terminal Output Cards ---------- */
+    .terminal-card {
+        background: #0D0E15;
+        border: 1px solid #1E293B;
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
+        margin: 0.85rem 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .terminal-topbar {
+        background: #161822;
+        padding: 0.55rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #232738;
+    }
+    .terminal-dots {
+        display: flex;
+        gap: 6px;
+    }
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .dot-red    { background: #EF4444; }
+    .dot-yellow { background: #F59E0B; }
+    .dot-green  { background: #10B981; }
+    .terminal-title {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        font-weight: 600;
+    }
+    .terminal-body {
+        padding: 1.1rem 1.25rem;
+        color: #E2E8F0;
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+    .terminal-prompt {
+        color: #FF6B1A;
+        font-weight: 700;
+        margin-right: 0.4rem;
+    }
+    .terminal-highlight {
+        color: #38BDF8;
+        font-weight: 600;
+    }
+    .terminal-success {
+        color: #34D399;
+    }
+    .terminal-warn {
+        color: #F87171;
+    }
+    .terminal-dim {
+        color: #64748B;
     }
 
-    /* ---------- Metric Tiles ---------- */
-    [data-testid="stMetric"] {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 1rem 1.25rem !important;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03) !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-    [data-testid="stMetric"]:hover {
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05) !important;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        color: #64748b !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.04em !important;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 1.7rem !important;
-        font-weight: 700 !important;
-        color: #0f172a !important;
-    }
-
-    /* ---------- Sidebar ---------- */
+    /* ---------- Sidebar Technical Styling ---------- */
     [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e2e8f0 !important;
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E5E7EB !important;
     }
     [data-testid="stSidebar"] .stMarkdown h3 {
-        color: #0f172a !important;
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
-        margin-bottom: 0.2rem !important;
+        color: #111827 !important;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
     }
-    [data-testid="stSidebar"] .stMarkdown p {
-        color: #64748b !important;
-        font-size: 0.84rem !important;
-        line-height: 1.5 !important;
+    .sidebar-sys-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 0.85rem;
+        margin-top: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.76rem;
+    }
+    .sidebar-sys-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        color: #475569;
+    }
+    .sidebar-sys-row span.active {
+        color: #FF6B1A;
+        font-weight: 700;
     }
 
-    /* ---------- Buttons ---------- */
+    /* ---------- Buttons & CTAs ---------- */
     .stButton > button {
-        border-radius: 10px !important;
-        padding: 0.55rem 1.25rem !important;
+        border-radius: 8px !important;
+        padding: 0.55rem 1.2rem !important;
         font-weight: 600 !important;
-        font-size: 0.88rem !important;
+        font-size: 0.86rem !important;
+        font-family: 'Inter', sans-serif !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        border: 1px solid #e2e8f0 !important;
-        background-color: #ffffff !important;
-        color: #1e293b !important;
+        border: 1px solid #E5E7EB !important;
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
     }
     .stButton > button:hover {
-        border-color: #cbd5e1 !important;
-        background-color: #f8fafc !important;
-        color: #0f172a !important;
+        border-color: #CBD5E1 !important;
+        background-color: #F8FAFC !important;
+        color: #111827 !important;
     }
     .stButton > button[kind="primary"] {
-        background-color: #4f46e5 !important;
-        color: #ffffff !important;
+        background-color: #FF6B1A !important;
+        color: #FFFFFF !important;
         border: none !important;
-        box-shadow: 0 1px 3px rgba(79, 70, 229, 0.25) !important;
+        box-shadow: 0 1px 3px rgba(255, 107, 26, 0.3) !important;
     }
     .stButton > button[kind="primary"]:hover {
-        background-color: #4338ca !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
+        background-color: #EA580C !important;
+        box-shadow: 0 4px 14px rgba(255, 107, 26, 0.4) !important;
         transform: translateY(-1px);
     }
 
-    /* ---------- Tabs ---------- */
+    /* ---------- Tabs Navigation ---------- */
     [data-testid="stTabs"] {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
     }
     [data-testid="stTabs"] button {
-        font-size: 0.92rem !important;
-        font-weight: 500 !important;
-        color: #64748b !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        color: #6B7280 !important;
         padding: 0.65rem 1.25rem !important;
-        border-radius: 8px 8px 0 0 !important;
+        border-radius: 6px 6px 0 0 !important;
         transition: all 0.2s ease !important;
     }
     [data-testid="stTabs"] button[aria-selected="true"] {
-        color: #4f46e5 !important;
-        font-weight: 600 !important;
-        border-bottom: 2px solid #4f46e5 !important;
+        color: #FF6B1A !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #FF6B1A !important;
     }
 
-    /* ---------- Chat Messages ---------- */
+    /* ---------- Chat Message Cards ---------- */
     [data-testid="stChatMessage"] {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 10px !important;
         padding: 0.85rem 1.15rem !important;
         margin-bottom: 0.65rem !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
     }
 
-    .safety-block {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        color: #991b1b;
-        font-size: 0.88rem;
-    }
-
-    .source-tag {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #64748b;
-        margin-bottom: 0.35rem;
+    .source-badge {
         display: inline-block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2rem 0.55rem;
+        border-radius: 4px;
+        margin-bottom: 0.45rem;
+    }
+    .source-badge.db {
+        background: #EFF6FF;
+        color: #2563EB;
+        border: 1px solid #DBEAFE;
+    }
+    .source-badge.rag {
+        background: #FFF7ED;
+        color: #EA580C;
+        border: 1px solid #FFEDD5;
     }
 
     /* ---------- DataFrames ---------- */
     .stDataFrame {
         border-radius: 10px !important;
         overflow: hidden !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #E5E7EB !important;
     }
 
     /* ---------- Footer ---------- */
-    .fintech-footer {
+    .dev-footer {
         text-align: center;
-        color: #94a3b8;
-        font-size: 0.8rem;
+        color: #9CA3AF;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
         margin-top: 3rem;
         padding: 1rem 0;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid #E5E7EB;
     }
     </style>
     """,
@@ -296,52 +412,59 @@ if "pipeline_result" not in st.session_state:
     st.session_state.pipeline_result = None
 
 # ---------------------------------------------------------------------------
-# 4. Sidebar Branding & System Context
+# 4. Sidebar Technical Panel
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("### LedgerMind")
+    st.markdown("### ⚡ **LedgerMind**")
     st.caption("Autonomous Financial Controller")
     st.write("")
 
-    st.markdown("##### Platform")
+    st.markdown("##### **Architecture**")
     st.markdown(
         """
-        Automates invoice-to-bank reconciliation, diagnoses mismatch root causes,
-        forecasts cash flow, and answers financial queries via a multi-agent router.
-        """
+        <div style="color: #4B5563; font-size: 0.83rem; line-height: 1.5; margin-bottom: 0.75rem;">
+        Multi-agent financial engine orchestrating deterministic reconciliation, 
+        ChromaDB policy retrieval, text-to-SQL query generation, and predictive cash flow modeling.
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
-    st.write("---")
-    st.markdown("##### System Status")
+    st.markdown("##### **Runtime Environment**")
     backend_label = _active_backend.capitalize() if _active_backend else "SQLite"
     st.markdown(
         f"""
-        <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem; color: #475569;">
-            <div><span style="color: #10b981; font-weight: 700;">●</span> Database: <b>{backend_label}</b></div>
-            <div><span style="color: #10b981; font-weight: 700;">●</span> RAG: <b>ChromaDB Active</b></div>
-            <div><span style="color: #10b981; font-weight: 700;">●</span> AI: <b>Gemini 3.7</b></div>
+        <div class="sidebar-sys-card">
+            <div class="sidebar-sys-row"><span>Engine:</span> <span class="active">LangGraph 0.2</span></div>
+            <div class="sidebar-sys-row"><span>Database:</span> <span class="active">{backend_label}</span></div>
+            <div class="sidebar-sys-row"><span>Vector Store:</span> <span class="active">ChromaDB</span></div>
+            <div class="sidebar-sys-row"><span>Foundation Model:</span> <span class="active">Gemini 3.7</span></div>
+            <div class="sidebar-sys-row"><span>Status:</span> <span style="color: #10B981; font-weight:700;">LIVE</span></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
     st.write("---")
-    st.caption("Version 1.0 &bull; Enterprise Ready")
+    st.caption("LedgerMind AI &bull; Version 1.0 Production")
 
 
 # ---------------------------------------------------------------------------
-# 5. Header Component
+# 5. Top Dev-Tool App Header
 # ---------------------------------------------------------------------------
 st.markdown(
     """
-    <div class="fintech-header">
-        <div class="header-title-group">
-            <h1>LedgerMind AI</h1>
-            <p>An Autonomous Finance Controller for Reconciliation, Forecasting &amp; Exception Intelligence</p>
+    <div class="dev-header">
+        <div class="dev-header-left">
+            <div class="dev-logo-badge">LM</div>
+            <div class="dev-header-titles">
+                <h1>LedgerMind AI</h1>
+                <p>AUTONOMOUS FINANCE ENGINE // RECONCILIATION &amp; REVENUE FORECASTING</p>
+            </div>
         </div>
-        <div class="header-status-pill">
-            <span class="status-dot"></span>
-            System Active
+        <div class="dev-status-pill">
+            <span class="pulse-dot"></span>
+            AGENT CLUSTER: ACTIVE
         </div>
     </div>
     """,
@@ -349,12 +472,12 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
-# 6. Tab Navigation
+# 6. Tab Navigation: Dashboard, AI Copilot, Full Pipeline
 # ---------------------------------------------------------------------------
 tab_dash, tab_copilot, tab_pipeline = st.tabs([
-    "Reconciliation",
-    "AI Copilot",
-    "Full Pipeline",
+    "⚡ Reconciliation Engine",
+    "🤖 Multi-Agent Copilot",
+    "🚀 LangGraph Pipeline",
 ])
 
 
@@ -362,28 +485,31 @@ tab_dash, tab_copilot, tab_pipeline = st.tabs([
 # TAB 1: RECONCILIATION DASHBOARD
 # ===========================================================================
 with tab_dash:
-    st.markdown("##### Ingestion & Matching")
+    st.markdown("##### **Data Ingestion & Deterministic Matching**")
 
+    # File uploaders
     col_inv, col_bank = st.columns(2)
     with col_inv:
         invoice_file = st.file_uploader(
-            "Upload Invoices (CSV)",
+            "Invoice Register (CSV)",
             type=["csv"],
             key="dash_inv_uploader",
         )
     with col_bank:
         bank_file = st.file_uploader(
-            "Upload Bank Statement (CSV)",
+            "Bank Statement Stream (CSV)",
             type=["csv"],
             key="dash_bank_uploader",
         )
 
+    # Action Controls
     c_rec, c_smp = st.columns([2, 1])
     with c_rec:
-        reconcile_clicked = st.button("Reconcile Transactions", type="primary", use_container_width=True)
+        reconcile_clicked = st.button("Execute Transaction Matcher", type="primary", use_container_width=True)
     with c_smp:
-        use_default = st.button("Load Sample Data", use_container_width=True)
+        use_default = st.button("Load Standard Sample (50 txns)", use_container_width=True)
 
+    # Ingestion & Reconciliation Logic
     if reconcile_clicked or use_default:
         try:
             if use_default or (not invoice_file and not bank_file):
@@ -393,15 +519,16 @@ with tab_dash:
                 inv_path = invoice_file if invoice_file else os.path.join(project_root, "data", "invoice.csv")
                 bnk_path = bank_file if bank_file else os.path.join(project_root, "data", "bank.csv")
 
-            with st.spinner("Processing records..."):
+            with st.spinner("Ingesting and matching transactional streams..."):
                 inv_df, bnk_df = load_data(inv_path, bnk_path)
                 st.session_state.invoice_df = inv_df
                 st.session_state.bank_df = bnk_df
                 st.session_state.recon_results = reconcile_transactions(inv_df, bnk_df)
                 st.session_state.ai_explanations = None
         except Exception as e:
-            st.error(f"Reconciliation error: {e}")
+            st.error(f"Reconciliation failure: {e}")
 
+    # Render Reconciliation Results
     if st.session_state.recon_results is not None:
         results = st.session_state.recon_results
         matched_df = results["matched"]
@@ -410,38 +537,89 @@ with tab_dash:
         total_inv = len(st.session_state.invoice_df) if st.session_state.invoice_df is not None else 0
 
         st.write("")
+        # 4 Icon-Badge Metric Cards in a balanced grid
         m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.metric("Total Processed", total_inv)
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">TOTAL PROCESSED</span>
+                        <div class="metric-icon-badge metric-icon-blue">📊</div>
+                    </div>
+                    <div class="metric-main-value">{total_inv}</div>
+                    <div class="metric-sub-label">Ingested invoice lines</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with m2:
-            st.metric("Matched", len(matched_df))
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">MATCHED</span>
+                        <div class="metric-icon-badge metric-icon-green">✓</div>
+                    </div>
+                    <div class="metric-main-value">{len(matched_df)}</div>
+                    <div class="metric-sub-label">Deterministic settlement</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with m3:
-            st.metric("Unmatched", len(unmatched_df))
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">EXCEPTIONS</span>
+                        <div class="metric-icon-badge metric-icon-red">⚠</div>
+                    </div>
+                    <div class="metric-main-value" style="color: #DC2626;">{len(unmatched_df)}</div>
+                    <div class="metric-sub-label">Requires AI diagnosis</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with m4:
-            st.metric("Match Rate", f"{match_pct:.1f}%")
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">MATCH RATE</span>
+                        <div class="metric-icon-badge metric-icon-orange">⚡</div>
+                    </div>
+                    <div class="metric-main-value" style="color: #FF6B1A;">{match_pct:.1f}%</div>
+                    <div class="metric-sub-label">Automated close ratio</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.write("")
+        # Data inspection grids
         c_m, c_u = st.columns(2)
         with c_m:
-            st.markdown("##### Matched Records")
+            st.markdown("##### **Matched Invoices**")
             if not matched_df.empty:
                 st.dataframe(matched_df, use_container_width=True, height=280)
             else:
                 st.info("No matching records found.")
 
         with c_u:
-            st.markdown("##### Exceptions (Unmatched)")
+            st.markdown("##### **Unmatched Invoices (Exceptions)**")
             if not unmatched_df.empty:
                 st.dataframe(unmatched_df, use_container_width=True, height=280)
             else:
-                st.success("All records matched.")
+                st.success("Zero exceptions. Clean reconciliation ledger.")
 
+        # AI Exception Explanations Section
         if not unmatched_df.empty:
             st.write("")
-            st.markdown("##### Exception Root-Cause Intelligence")
+            st.markdown("##### **AI Exception Root-Cause Intelligence**")
             if st.session_state.ai_explanations is None:
-                if st.button("Diagnose Exceptions with AI", use_container_width=True):
-                    with st.spinner("Analyzing exceptions with Gemini..."):
+                if st.button("Diagnose Exceptions with Gemini", use_container_width=True):
+                    with st.spinner("Executing Exception Agent root-cause diagnosis..."):
                         try:
                             ex_df = generate_exceptions(unmatched_df)
                             st.session_state.ai_explanations = ex_df
@@ -451,45 +629,70 @@ with tab_dash:
                                 pass
                             st.rerun()
                         except Exception as e:
-                            st.error(f"Exception analysis error: {e}")
+                            st.error(f"Exception analysis failure: {e}")
             else:
                 st.dataframe(st.session_state.ai_explanations, use_container_width=True)
 
 
 # ===========================================================================
-# TAB 2: AI COPILOT
+# TAB 2: MULTI-AGENT COPILOT (Router / SQL / Policy RAG)
 # ===========================================================================
 with tab_copilot:
-    st.markdown("##### Ask LedgerMind Copilot")
-    st.caption("Ask natural questions about invoice records (SQL Database) or financial policies (RAG Documents).")
+    st.markdown("##### **Natural Language Query Interface**")
+    st.caption("Dispatches SQL queries against the ledger database or ChromaDB semantic policy documents.")
 
+    # Technical Query Presets
     p1, p2, p3, p4 = st.columns(4)
     with p1:
-        if st.button("Unmatched Invoices?", use_container_width=True):
+        if st.button("Unmatched Invoices", use_container_width=True):
             st.session_state._copilot_prefill = "Which invoices are unmatched?"
     with p2:
-        if st.button("Total Matched Amount?", use_container_width=True):
+        if st.button("Total Matched Sum", use_container_width=True):
             st.session_state._copilot_prefill = "What is the total amount of matched invoices?"
     with p3:
-        if st.button("Settlement Cycle?", use_container_width=True):
+        if st.button("Settlement SLA", use_container_width=True):
             st.session_state._copilot_prefill = "What is the standard settlement cycle for merchants?"
     with p4:
-        if st.button("Refund Policy?", use_container_width=True):
-            st.session_state._copilot_prefill = "What is the refund processing policy?"
+        if st.button("Escalation SLA", use_container_width=True):
+            st.session_state._copilot_prefill = "What happens to transactions unmatched for more than 7 days?"
 
     st.write("")
+    # Render Conversation History with Terminal Styling
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
-            if msg.get("route"):
-                src_label = "Database (SQL)" if msg["route"] == "DATA" else "Policy Documents (RAG)"
-                st.markdown(f'<span class="source-tag">Source: {src_label}</span>', unsafe_allow_html=True)
-            if msg.get("is_safety", False) or msg["content"].startswith("[Security block]"):
-                st.markdown(f'<div class="safety-block">{msg["content"]}</div>', unsafe_allow_html=True)
+            if msg["role"] == "assistant":
+                route = msg.get("route", "UNKNOWN")
+                badge_class = "db" if route == "DATA" else "rag"
+                badge_text = "ROUTE: DATABASE (TEXT-TO-SQL)" if route == "DATA" else "ROUTE: POLICY (CHROMADB RAG)"
+                st.markdown(f'<span class="source-badge {badge_class}">[ {badge_text} ]</span>', unsafe_allow_html=True)
+                
+                is_safety = msg.get("is_safety", False) or msg["content"].startswith("[Security block]")
+                status_dot_class = "dot-red" if is_safety else "dot-green"
+                
+                st.markdown(
+                    f"""
+                    <div class="terminal-card">
+                        <div class="terminal-topbar">
+                            <div class="terminal-dots">
+                                <span class="dot {status_dot_class}"></span>
+                                <span class="dot dot-yellow"></span>
+                                <span class="dot dot-green"></span>
+                            </div>
+                            <span class="terminal-title">ledgermind:agent-response // {route}</span>
+                        </div>
+                        <div class="terminal-body">
+                            {msg["content"]}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
             else:
                 st.markdown(msg["content"])
 
+    # Chat Input Handler
     prefill = st.session_state.pop("_copilot_prefill", None)
-    user_input = st.chat_input("Ask about invoices or policies…")
+    user_input = st.chat_input("Query ledger database or company policies…")
     prompt_to_run = user_input or prefill
 
     if prompt_to_run:
@@ -502,23 +705,40 @@ with tab_copilot:
         })
 
         with st.chat_message("assistant"):
-            with st.spinner("Formulating response..."):
+            with st.spinner("Routing query and executing agent graph..."):
                 try:
                     result = route_and_answer(prompt_to_run)
-                    answer = result.get("answer", "No answer formulated.")
+                    answer = result.get("answer", "No answer could be formulated.")
                     route = result.get("route", "UNKNOWN")
                 except Exception as e:
-                    answer = f"Error processing query: {e}"
+                    answer = f"Agent execution error: {e}"
                     route = "ERROR"
 
-            src_label = "Database (SQL)" if route == "DATA" else "Policy Documents (RAG)"
-            st.markdown(f'<span class="source-tag">Source: {src_label}</span>', unsafe_allow_html=True)
+            badge_class = "db" if route == "DATA" else "rag"
+            badge_text = "ROUTE: DATABASE (TEXT-TO-SQL)" if route == "DATA" else "ROUTE: POLICY (CHROMADB RAG)"
+            st.markdown(f'<span class="source-badge {badge_class}">[ {badge_text} ]</span>', unsafe_allow_html=True)
 
             is_safety = answer.startswith("[Security block]")
-            if is_safety:
-                st.markdown(f'<div class="safety-block">{answer}</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(answer)
+            status_dot_class = "dot-red" if is_safety else "dot-green"
+
+            st.markdown(
+                f"""
+                <div class="terminal-card">
+                    <div class="terminal-topbar">
+                        <div class="terminal-dots">
+                            <span class="dot {status_dot_class}"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <span class="terminal-title">ledgermind:agent-response // {route}</span>
+                    </div>
+                    <div class="terminal-body">
+                        {answer}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.session_state.chat_history.append({
             "role": "assistant",
@@ -529,22 +749,22 @@ with tab_copilot:
 
     if st.session_state.chat_history:
         st.write("")
-        if st.button("Clear Conversation", use_container_width=False):
+        if st.button("Clear Terminal Log", use_container_width=False):
             st.session_state.chat_history = []
             st.rerun()
 
 
 # ===========================================================================
-# TAB 3: FULL PIPELINE
+# TAB 3: LANGGRAPH PIPELINE & EXECUTIVE REPORTING
 # ===========================================================================
 with tab_pipeline:
-    st.markdown("##### End-to-End Autonomous Pipeline")
-    st.caption("Executes Data Loading ➔ Reconciliation ➔ Exception Diagnostics ➔ ML Forecasting ➔ Executive Synthesis.")
+    st.markdown("##### **LangGraph Multi-Agent Pipeline Orchestration**")
+    st.caption("Executes stateful pipeline: Ingestion ➔ Matching ➔ Exception Diagnosis ➔ Scikit-Learn Forecast ➔ PDF Report.")
 
-    run_pipeline_btn = st.button("Run LedgerMind Pipeline", type="primary", use_container_width=True)
+    run_pipeline_btn = st.button("Execute Pipeline Graph", type="primary", use_container_width=True)
 
     if run_pipeline_btn:
-        with st.spinner("Executing LangGraph pipeline..."):
+        with st.spinner("Orchestrating 5-node LangGraph pipeline..."):
             inv_file = os.path.join(project_root, "data", "invoice.csv")
             bank_file = os.path.join(project_root, "data", "bank.csv")
             rev_file = os.path.join(project_root, "data", "revenue.csv")
@@ -555,7 +775,7 @@ with tab_pipeline:
                 pdf_out = os.path.join(project_root, "reports", "ledgermind_report.pdf")
                 generate_pdf_report(state, output_path=pdf_out)
             except Exception as e:
-                st.error(f"Pipeline error: {e}")
+                st.error(f"Pipeline orchestration error: {e}")
 
     if st.session_state.pipeline_result is not None:
         p_res = st.session_state.pipeline_result
@@ -566,12 +786,13 @@ with tab_pipeline:
         exceptions_df = p_res.get("exceptions", pd.DataFrame())
 
         st.write("")
+        # PDF Export Action
         pdf_path = os.path.join(project_root, "reports", "ledgermind_report.pdf")
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 pdf_bytes = f.read()
             st.download_button(
-                label="Download Executive PDF Report",
+                label="📄  Download Executive Financial Report (PDF)",
                 data=pdf_bytes,
                 file_name="LedgerMind_Financial_Report.pdf",
                 mime="application/pdf",
@@ -579,21 +800,70 @@ with tab_pipeline:
             )
 
         st.write("")
+        # 4 Metric Cards
         k1, k2, k3, k4 = st.columns(4)
         with k1:
-            st.metric("Total Invoices", report.get("total_invoices", 0))
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">TOTAL INVOICES</span>
+                        <div class="metric-icon-badge metric-icon-blue">📁</div>
+                    </div>
+                    <div class="metric-main-value">{report.get('total_invoices', 0)}</div>
+                    <div class="metric-sub-label">Ledger records processed</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with k2:
-            st.metric("Matched", report.get("matched_count", 0))
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">MATCHED</span>
+                        <div class="metric-icon-badge metric-icon-green">✓</div>
+                    </div>
+                    <div class="metric-main-value">{report.get('matched_count', 0)}</div>
+                    <div class="metric-sub-label">Cleared transactions</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with k3:
-            st.metric("Exceptions", report.get("exception_count", 0))
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">EXCEPTIONS</span>
+                        <div class="metric-icon-badge metric-icon-red">⚠</div>
+                    </div>
+                    <div class="metric-main-value" style="color: #DC2626;">{report.get('exception_count', 0)}</div>
+                    <div class="metric-sub-label">Actionable root-causes</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with k4:
-            st.metric("Match Rate", f"{report.get('match_percentage', 0.0)}%")
+            st.markdown(
+                f"""
+                <div class="metric-card-dev">
+                    <div class="metric-top-row">
+                        <span class="metric-tag">SETTLEMENT RATIO</span>
+                        <div class="metric-icon-badge metric-icon-orange">⚡</div>
+                    </div>
+                    <div class="metric-main-value" style="color: #FF6B1A;">{report.get('match_percentage', 0.0)}%</div>
+                    <div class="metric-sub-label">Auto-reconciliation rate</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.write("")
         c_chart, c_comm = st.columns([3, 2])
 
         with c_chart:
-            st.markdown("##### Revenue Trajectory & Q3 Forecast")
+            st.markdown("##### **Revenue Trajectory & Scikit-Learn Q3 Forecast**")
             if not hist_df.empty and not forecast_df.empty:
                 fig = go.Figure()
 
@@ -602,9 +872,9 @@ with tab_pipeline:
                     x=hist_df["month"],
                     y=hist_df["revenue"],
                     mode="lines+markers",
-                    name="Historical",
-                    line=dict(color="#4f46e5", width=2.5),
-                    marker=dict(size=7, color="#4f46e5"),
+                    name="Historical Revenue",
+                    line=dict(color="#111827", width=2.5),
+                    marker=dict(size=7, color="#111827"),
                     hovertemplate="<b>%{x}</b>: $%{y:,.0f}<extra>Historical</extra>"
                 ))
 
@@ -614,7 +884,7 @@ with tab_pipeline:
                     y=[hist_df["revenue"].iloc[-1], forecast_df["predicted_revenue"].iloc[0]],
                     mode="lines",
                     name="Bridge",
-                    line=dict(color="#818cf8", width=2, dash="dot"),
+                    line=dict(color="#FF6B1A", width=2, dash="dot"),
                     showlegend=False,
                     hoverinfo="skip"
                 ))
@@ -624,41 +894,49 @@ with tab_pipeline:
                     x=forecast_df["month"],
                     y=forecast_df["predicted_revenue"],
                     mode="lines+markers",
-                    name="Q3 Forecast",
-                    line=dict(color="#818cf8", width=2.5, dash="dash"),
-                    marker=dict(size=8, symbol="diamond", color="#6366f1"),
+                    name="Q3 Linear Projection",
+                    line=dict(color="#FF6B1A", width=2.5, dash="dash"),
+                    marker=dict(size=8, symbol="diamond", color="#EA580C"),
                     hovertemplate="<b>%{x}</b>: $%{y:,.0f}<extra>Forecast</extra>"
                 ))
 
                 fig.update_layout(
-                    paper_bgcolor="#ffffff",
-                    plot_bgcolor="#ffffff",
+                    paper_bgcolor="#FFFFFF",
+                    plot_bgcolor="#FFFFFF",
                     margin=dict(l=20, r=20, t=25, b=20),
                     height=300,
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                    xaxis=dict(gridcolor="#f1f5f9", linecolor="#e2e8f0", title=None),
-                    yaxis=dict(gridcolor="#f1f5f9", linecolor="#e2e8f0", title=None, tickprefix="$"),
+                    xaxis=dict(gridcolor="#F3F4F6", linecolor="#E5E7EB", title=None),
+                    yaxis=dict(gridcolor="#F3F4F6", linecolor="#E5E7EB", title=None, tickprefix="$"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
         with c_comm:
-            st.markdown("##### Executive Strategic Commentary")
+            st.markdown("##### **Executive Strategic Commentary**")
             summary_text = report.get("forecast_summary", "No commentary generated.")
             st.markdown(
                 f"""
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.1rem 1.3rem; font-size: 0.88rem; line-height: 1.6; color: #334155;">
-                    <div style="color: #4f46e5; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 0.04em;">
-                        AI Strategic Synthesis
+                <div class="terminal-card">
+                    <div class="terminal-topbar">
+                        <div class="terminal-dots">
+                            <span class="dot dot-green"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <span class="terminal-title">agent:forecast-commentary // synthesis</span>
                     </div>
-                    {summary_text}
+                    <div class="terminal-body" style="font-size: 0.84rem; line-height: 1.6;">
+                        <span class="terminal-prompt">$</span> <span class="terminal-highlight">forecast.analyze(q3_projection)</span><br><br>
+                        {summary_text}
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
         st.write("")
-        st.markdown("##### Pipeline Artifact Inspection")
-        tab_m, tab_e, tab_f = st.tabs(["Matched", "Exceptions", "Forecast Data"])
+        st.markdown("##### **Granular Ledger Inspection**")
+        tab_m, tab_e, tab_f = st.tabs(["⚖️ Matched Records", "🚨 Exceptions", "🔮 Forecast Matrix"])
         with tab_m:
             if not matched_df.empty:
                 st.dataframe(matched_df, use_container_width=True, height=220)
@@ -679,6 +957,6 @@ with tab_pipeline:
 # Footer
 # ---------------------------------------------------------------------------
 st.markdown(
-    '<div class="fintech-footer">LedgerMind AI &bull; Autonomous Financial Controller &bull; Built with LangGraph &amp; Gemini</div>',
+    '<div class="dev-footer">LEDGERMIND AI // AUTONOMOUS MULTI-AGENT FINANCE CONTROLLER // POWERED BY LANGGRAPH &amp; GEMINI</div>',
     unsafe_allow_html=True,
 )
