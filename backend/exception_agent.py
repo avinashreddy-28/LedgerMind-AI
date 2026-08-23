@@ -42,6 +42,7 @@ from google import genai
 _client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 # The model to use for generating explanations.
+# gemini-3.6-flash is the current recommended fast model.
 MODEL_NAME = "gemini-3.6-flash"
 
 

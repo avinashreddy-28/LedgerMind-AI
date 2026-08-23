@@ -4,4 +4,7 @@ streamlit
 fastapi
 uvicorn
 sqlalchemy
+psycopg2-binary
+python-dotenv
+google-genai
 plotly

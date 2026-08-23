@@ -1,0 +1,6 @@
+Finance Operations Manual
+
+Reconciliation should be performed daily.
+Unmatched transactions older than 7 days require escalation.
+All exceptions must be documented with a reason code.
+Monthly close requires all invoices to be in MATCHED or ESCALATED status.

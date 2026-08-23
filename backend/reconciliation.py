@@ -3,11 +3,12 @@ reconciliation.py
 =================
 Core reconciliation engine for LedgerMind-AI.
 
-Provides three public functions:
-    1. load_data       – reads invoice and bank CSV files into DataFrames.
+Provides four public functions:
+    1. load_data              – reads invoice and bank CSV files into DataFrames.
     2. reconcile_transactions – matches invoices to bank transactions by amount
-                               and reports matched, unmatched, and a match %.
+                                and reports matched, unmatched, and a match %.
     3. generate_exceptions    – uses AI to explain each unmatched invoice.
+    4. save_to_db             – persists reconciliation results to PostgreSQL.
 """
 
 import time
@@ -21,33 +22,50 @@ import pandas as pd
 
 def load_data(invoice_path: str, bank_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Load invoice and bank-statement CSVs into pandas DataFrames.
+    Load invoice and bank-statement CSVs into pandas DataFrames with robust error handling.
 
     Parameters
     ----------
     invoice_path : str
-        File path to the invoice CSV.  Expected columns: invoice_id, amount.
+        File path to the invoice CSV. Expected columns: invoice_id, amount.
     bank_path : str
-        File path to the bank-statement CSV.  Expected columns: txn_id, amount.
+        File path to the bank-statement CSV. Expected columns: txn_id, amount.
 
     Returns
     -------
     tuple[pd.DataFrame, pd.DataFrame]
         (invoice_df, bank_df) — cleaned DataFrames ready for reconciliation.
     """
+    import os
 
-    # Read the CSV files into DataFrames.
-    # pandas automatically infers column dtypes (e.g. int for amount).
-    invoice_df = pd.read_csv(invoice_path)
-    bank_df = pd.read_csv(bank_path)
+    # Check file existence
+    if not os.path.exists(invoice_path):
+        raise FileNotFoundError(f"Invoice CSV file not found at: {invoice_path}")
+    if not os.path.exists(bank_path):
+        raise FileNotFoundError(f"Bank statement CSV file not found at: {bank_path}")
 
-    # Strip any accidental whitespace from column names so that downstream
-    # lookups like df["amount"] never fail due to hidden spaces.
+    # Read the CSV files into DataFrames
+    try:
+        invoice_df = pd.read_csv(invoice_path)
+    except Exception as e:
+        raise ValueError(f"Could not parse invoice CSV file ({invoice_path}): {e}")
+
+    try:
+        bank_df = pd.read_csv(bank_path)
+    except Exception as e:
+        raise ValueError(f"Could not parse bank CSV file ({bank_path}): {e}")
+
+    # Validate required columns
+    if "amount" not in invoice_df.columns:
+        raise ValueError(f"Invoice CSV missing required 'amount' column. Found: {list(invoice_df.columns)}")
+    if "amount" not in bank_df.columns:
+        raise ValueError(f"Bank CSV missing required 'amount' column. Found: {list(bank_df.columns)}")
+
+    # Strip any accidental whitespace from column names
     invoice_df.columns = invoice_df.columns.str.strip()
     bank_df.columns = bank_df.columns.str.strip()
 
-    # Strip whitespace from string columns (e.g. invoice_id / txn_id) to
-    # prevent mismatches caused by leading/trailing spaces in the source data.
+    # Strip whitespace from string columns
     invoice_df = invoice_df.apply(
         lambda col: col.str.strip() if col.dtype == "object" else col
     )
@@ -200,6 +218,82 @@ def generate_exceptions(unmatched_df: pd.DataFrame) -> pd.DataFrame:
     # --- Step 4: Build and return the results DataFrame --------------------
     exceptions_df = pd.DataFrame(exception_records)
     return exceptions_df
+
+
+# ---------------------------------------------------------------------------
+# 4. PERSIST RESULTS TO DATABASE
+# ---------------------------------------------------------------------------
+
+def save_to_db(
+    matched_df: pd.DataFrame,
+    unmatched_with_exceptions_df: pd.DataFrame,
+) -> None:
+    """
+    Persist reconciliation results to the PostgreSQL "invoices" table.
+
+    This function merges matched and unmatched DataFrames into a single
+    table with a ``status`` column and writes it to the database, replacing
+    any previous data in the table.
+
+    Parameters
+    ----------
+    matched_df : pd.DataFrame
+        Invoices that were successfully matched to bank transactions.
+        Must contain ``invoice_id`` and ``amount`` columns.
+    unmatched_with_exceptions_df : pd.DataFrame
+        Unmatched invoices enriched with AI explanations.
+        Must contain ``invoice_id``, ``amount``, and ``explanation`` columns.
+
+    Raises
+    ------
+    sqlalchemy.exc.OperationalError
+        If the database is unreachable.
+    """
+
+    # --- Step 1: Prepare the matched rows ---------------------------------
+    # Copy to avoid mutating the caller's DataFrame.
+    matched = matched_df[["invoice_id", "amount"]].copy()
+
+    # Tag every matched invoice with status="MATCHED" and no explanation.
+    matched["status"] = "MATCHED"
+    matched["explanation"] = None
+
+    # --- Step 2: Prepare the unmatched rows --------------------------------
+    # These already carry an "explanation" column from generate_exceptions().
+    unmatched = unmatched_with_exceptions_df[
+        ["invoice_id", "amount", "explanation"]
+    ].copy()
+
+    # Tag every unmatched invoice.
+    unmatched["status"] = "UNMATCHED"
+
+    # --- Step 3: Combine into one DataFrame --------------------------------
+    # Column order: invoice_id | amount | status | explanation
+    combined = pd.concat([matched, unmatched], ignore_index=True)
+    combined = combined[["invoice_id", "amount", "status", "explanation"]]
+
+    # --- Step 4: Write to the database -------------------------------------
+    # Lazy-import db.py so that reconciliation.py stays usable even when
+    # PostgreSQL is not configured (e.g. during CSV-only testing).
+    from backend.db import get_engine
+
+    engine = get_engine()
+
+    # to_sql writes the DataFrame to the "invoices" table.
+    # if_exists="replace" drops and recreates the table each time so we
+    # always reflect the latest reconciliation run.
+    # index=False prevents pandas from writing the DataFrame index as a column.
+    combined.to_sql(
+        name="invoices",
+        con=engine,
+        if_exists="replace",
+        index=False,
+    )
+
+    print(
+        f"✅ Saved {len(combined)} rows to 'invoices' table "
+        f"({len(matched)} matched, {len(unmatched)} unmatched)."
+    )
 
 
 # ---------------------------------------------------------------------------

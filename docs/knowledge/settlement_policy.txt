@@ -1,0 +1,6 @@
+Settlement Policy
+
+Standard settlement cycle is T+2 business days for most merchants.
+Premium merchants may be eligible for T+1 settlement.
+Settlements are processed automatically every business day at 10 PM IST.
+Failed settlements are retried up to 3 times before manual review.
