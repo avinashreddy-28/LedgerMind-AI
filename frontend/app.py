@@ -66,7 +66,7 @@ st.markdown(
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         background-color: #FAFAFA !important;
-        color: #1A1A1A !important;
+        color: #111827 !important;
         letter-spacing: -0.015em;
     }
 
@@ -150,13 +150,13 @@ st.markdown(
         background: #FFFFFF;
         border: 1px solid #E5E7EB;
         border-radius: 12px;
-        padding: 1.1rem 1.25rem;
+        padding: 1rem 1.15rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 100%;
+        min-height: 110px;
     }
     .metric-card-dev:hover {
         border-color: #D1D5DB;
@@ -167,11 +167,11 @@ st.markdown(
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
     }
     .metric-icon-badge {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -186,22 +186,42 @@ st.markdown(
     .metric-tag {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        font-weight: 600;
+        font-weight: 700;
         color: #6B7280;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: visible;
     }
     .metric-main-value {
         font-family: 'JetBrains Mono', monospace;
         font-size: 1.75rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #111827;
         letter-spacing: -0.03em;
-        margin: 0.2rem 0;
+        margin: 0.15rem 0;
     }
     .metric-sub-label {
-        font-size: 0.76rem;
+        font-size: 0.75rem;
         color: #6B7280;
+        white-space: nowrap;
+    }
+
+    /* ---------- File Uploader Styling ---------- */
+    [data-testid="stFileUploader"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 10px !important;
+        padding: 0.65rem 0.85rem !important;
+    }
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: #F9FAFB !important;
+        border: 1px dashed #CBD5E1 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stFileUploaderDropzone"] [data-testid="stMarkdownContainer"] p {
+        color: #374151 !important;
+        font-size: 0.82rem !important;
     }
 
     /* ---------- Terminal Output Cards ---------- */
@@ -254,15 +274,6 @@ st.markdown(
     .terminal-highlight {
         color: #38BDF8;
         font-weight: 600;
-    }
-    .terminal-success {
-        color: #34D399;
-    }
-    .terminal-warn {
-        color: #F87171;
-    }
-    .terminal-dim {
-        color: #64748B;
     }
 
     /* ---------- Sidebar Technical Styling ---------- */
@@ -325,22 +336,33 @@ st.markdown(
         transform: translateY(-1px);
     }
 
-    /* ---------- Tabs Navigation ---------- */
+    /* ---------- Explicit Tab Styling ---------- */
     [data-testid="stTabs"] {
         margin-bottom: 1.25rem !important;
     }
-    [data-testid="stTabs"] button {
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        color: #6B7280 !important;
-        padding: 0.65rem 1.25rem !important;
-        border-radius: 6px 6px 0 0 !important;
-        transition: all 0.2s ease !important;
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        gap: 0.4rem !important;
+        background-color: transparent !important;
     }
-    [data-testid="stTabs"] button[aria-selected="true"] {
+    [data-testid="stTabs"] [data-baseweb="tab"] {
+        background-color: #F3F4F6 !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 8px 8px 0 0 !important;
+        padding: 0.55rem 1.15rem !important;
+        color: #4B5563 !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        margin-right: 0.2rem !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #D1D5DB !important;
+        border-bottom: 2px solid #FF6B1A !important;
         color: #FF6B1A !important;
         font-weight: 700 !important;
-        border-bottom: 2px solid #FF6B1A !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+        background-color: #FF6B1A !important;
     }
 
     /* ---------- Chat Message Cards ---------- */
@@ -516,8 +538,8 @@ with tab_dash:
                 inv_path = os.path.join(project_root, "data", "invoice.csv")
                 bnk_path = os.path.join(project_root, "data", "bank.csv")
             else:
-                inv_path = invoice_file if invoice_file else os.path.join(project_root, "data", "invoice.csv")
-                bnk_path = bank_file if bank_file else os.path.join(project_root, "data", "bank.csv")
+                inv_path = invoice_file if invoice_file is not None else os.path.join(project_root, "data", "invoice.csv")
+                bnk_path = bank_file if bank_file is not None else os.path.join(project_root, "data", "bank.csv")
 
             with st.spinner("Ingesting and matching transactional streams..."):
                 inv_df, bnk_df = load_data(inv_path, bnk_path)

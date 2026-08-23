@@ -13,7 +13,7 @@ import sys
 # Ensure the project root is on the Python path so that
 # "from backend.reconciliation import ..." works regardless
 # of where the script is invoked from.
-project_root = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 from backend.reconciliation import load_data, reconcile_transactions

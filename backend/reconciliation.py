@@ -38,22 +38,28 @@ def load_data(invoice_path: str, bank_path: str) -> tuple[pd.DataFrame, pd.DataF
     """
     import os
 
-    # Check file existence
-    if not os.path.exists(invoice_path):
-        raise FileNotFoundError(f"Invoice CSV file not found at: {invoice_path}")
-    if not os.path.exists(bank_path):
-        raise FileNotFoundError(f"Bank statement CSV file not found at: {bank_path}")
+    # Check file existence if paths are strings or PathLike
+    if isinstance(invoice_path, (str, os.PathLike)):
+        if not os.path.exists(invoice_path):
+            raise FileNotFoundError(f"Invoice CSV file not found at: {invoice_path}")
+    if isinstance(bank_path, (str, os.PathLike)):
+        if not os.path.exists(bank_path):
+            raise FileNotFoundError(f"Bank statement CSV file not found at: {bank_path}")
 
-    # Read the CSV files into DataFrames
+    # Read the CSV files into DataFrames (supports filepath, UploadedFile, or BytesIO)
     try:
+        if hasattr(invoice_path, "seek"):
+            invoice_path.seek(0)
         invoice_df = pd.read_csv(invoice_path)
     except Exception as e:
-        raise ValueError(f"Could not parse invoice CSV file ({invoice_path}): {e}")
+        raise ValueError(f"Could not parse invoice CSV: {e}")
 
     try:
+        if hasattr(bank_path, "seek"):
+            bank_path.seek(0)
         bank_df = pd.read_csv(bank_path)
     except Exception as e:
-        raise ValueError(f"Could not parse bank CSV file ({bank_path}): {e}")
+        raise ValueError(f"Could not parse bank CSV: {e}")
 
     # Validate required columns
     if "amount" not in invoice_df.columns:

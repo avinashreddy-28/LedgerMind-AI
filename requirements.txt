@@ -12,3 +12,4 @@ chromadb
 scikit-learn
 langgraph
 reportlab
+ragas
