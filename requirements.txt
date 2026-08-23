@@ -8,3 +8,7 @@ psycopg2-binary
 python-dotenv
 google-genai
 plotly
+chromadb
+scikit-learn
+langgraph
+reportlab
