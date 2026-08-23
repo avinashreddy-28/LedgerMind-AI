@@ -1,0 +1,5 @@
+Escalation Policy
+
+Transactions unmatched for more than 7 days must be escalated to the finance manager.
+Escalated transactions require a resolution note within 48 hours.
+Repeated unmatched transactions from the same customer trigger an automatic review.
